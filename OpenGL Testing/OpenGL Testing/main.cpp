@@ -98,13 +98,26 @@ int main() {
 	glGenBuffers(1, &vbo);
 	
 	GLfloat vertices[] = {
-		0.0f,  0.5f, 1.0f, 0.0f, 0.0f,
-		0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
-		-0.5f, -0.5f, 0.0f, 0.0f, 1.0f
+		-0.5f,  0.5f, 1.0f, 0.0f, 0.0f, // Top-left
+		0.5f,  0.5f, 0.0f, 1.0f, 0.0f, // Top-right
+		0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // Bottom-right
+		-0.5f, -0.5f, 1.0f, 1.0f, 1.0f  // Bottom-left
 	};
 	
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	
+	// Create an element array
+	GLuint ebo;
+	glGenBuffers(1, &ebo);
+	
+	GLuint elements[] = {
+		0, 1, 2,
+		2, 3, 0
+	};
+	
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
 	
 	GLuint shaderProgram = LoadShaders("./Resources/vertexShader.txt", "./Resources/fragmentShader.txt");
 	glUseProgram(shaderProgram);
@@ -130,13 +143,14 @@ int main() {
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		
-		// Draw a triangle from the 3 vertices
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		// Draw a rectangle from the 2 triangles using 6 indices
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		
 		SDL_GL_SwapWindow(window);
 	}
 	glDeleteProgram(shaderProgram);
 	
+	glDeleteBuffers(1, &ebo);
 	glDeleteBuffers(1, &vbo);
 	
 	glDeleteVertexArrays(1, &vao);
