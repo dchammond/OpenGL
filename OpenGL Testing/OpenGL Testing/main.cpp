@@ -9,6 +9,8 @@
 #define GLEW_STATIC
 #include "GL/glew.h"
 #include <SDL2/SDL.h>
+#include "SOIL.h"
+#include "glm.hpp"
 #include <iostream>
 
 int main() {
@@ -22,10 +24,7 @@ int main() {
 	glewExperimental = GL_TRUE;
 	glewInit();
 	
-	GLuint vertexBuffer;
-	glGenBuffers(1, &vertexBuffer);
 	
-	printf("%u\n", vertexBuffer);
 	
 	SDL_Event windowEvent;
 	while (true)
