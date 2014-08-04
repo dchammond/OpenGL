@@ -42,17 +42,27 @@ GLuint LoadShaders(const char * vertex_file_path, const char * fragment_file_pat
 			FragmentShaderCode += "\n" + Line;
 		FragmentShaderStream.close();
 	}
- 
+	GLint Result;
 	// Compile Vertex Shader
 	char const * VertexSourcePointer = VertexShaderCode.c_str();
 	glShaderSource(VertexShaderID, 1, &VertexSourcePointer , NULL);
 	glCompileShader(VertexShaderID);
+	glGetShaderiv(VertexShaderID, GL_COMPILE_STATUS, &Result);
+//	if (Result == GL_TRUE) {
+//		cout << "NOOO" << endl;
+//		cout << VertexSourcePointer << endl;
+//	}
 
  
 	// Compile Fragment Shader
 	char const * FragmentSourcePointer = FragmentShaderCode.c_str();
 	glShaderSource(FragmentShaderID, 1, &FragmentSourcePointer , NULL);
 	glCompileShader(FragmentShaderID);
+	glGetShaderiv(FragmentShaderID, GL_COMPILE_STATUS, &Result);
+//	if (Result == GL_TRUE) {
+//		cout << "NOOO" << endl;
+//		cout << FragmentSourcePointer << endl;
+//	}
 
  
 	// Link the program
@@ -78,18 +88,55 @@ int main() {
 	glewExperimental = GL_TRUE;
 	glewInit();
 	
+	// Create Vertex Array Object
+	GLuint vao;
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
 	
+	// Create a Vertex Buffer Object and copy the vertex data to it
+	GLuint vbo;
+	glGenBuffers(1, &vbo);
+	
+	GLfloat vertices[] = {
+		0.0f, 0.5f,
+		0.5f, -0.5f,
+		-0.5f, -0.5f
+	};
+	
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	
+	GLuint shaderProgram = LoadShaders("./Resources/vertexShader.txt", "./Resources/fragmentShader.txt");
+	glUseProgram(shaderProgram);
+	
+	// Specify the layout of the vertex data
+	GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
+	glEnableVertexAttribArray(posAttrib);
+	glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
 	
 	SDL_Event windowEvent;
-	while (true)
-	{
-		if (SDL_PollEvent(&windowEvent))
-		{
-			if (windowEvent.type == SDL_QUIT) break;
+	while (true) {
+		if (SDL_PollEvent(&windowEvent)) {
+			if (windowEvent.type == SDL_QUIT) {
+				break;
+			}
 		}
+		
+		// Clear the screen to black
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+		
+		// Draw a triangle from the 3 vertices
+		glDrawArrays(GL_TRIANGLES, 0, 3);
 		
 		SDL_GL_SwapWindow(window);
 	}
+	glDeleteProgram(shaderProgram);
+	
+	glDeleteBuffers(1, &vbo);
+	
+	glDeleteVertexArrays(1, &vao);
+	
 	SDL_GL_DeleteContext(context);
     return 0;
 }
