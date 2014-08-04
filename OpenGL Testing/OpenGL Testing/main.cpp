@@ -6,8 +6,10 @@
 //  Copyright (c) 2014 Learning. All rights reserved.
 //
 
-#include <iostream>
+#define GLEW_STATIC
+#include "GL/glew.h"
 #include <SDL2/SDL.h>
+#include <iostream>
 
 int main() {
 	
@@ -17,6 +19,13 @@ int main() {
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 	SDL_Window *window = SDL_CreateWindow("OpenGL", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_OPENGL);
 	SDL_GLContext context = SDL_GL_CreateContext(window);
+	glewExperimental = GL_TRUE;
+	glewInit();
+	
+	GLuint vertexBuffer;
+	glGenBuffers(1, &vertexBuffer);
+	
+	printf("%u\n", vertexBuffer);
 	
 	SDL_Event windowEvent;
 	while (true)
