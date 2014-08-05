@@ -185,7 +185,7 @@ int main() {
 	
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, textures[1]);
-	image = SOIL_load_image("./Resourcessample2.png", &width, &height, 0, SOIL_LOAD_RGB);
+	image = SOIL_load_image("./Resources/sample2.png", &width, &height, 0, SOIL_LOAD_RGB);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
 	SOIL_free_image_data(image);
 	glUniform1i(glGetUniformLocation(shaderProgram, "texPuppy"), 1);
@@ -210,6 +210,8 @@ int main() {
 	GLint uniProj = glGetUniformLocation(shaderProgram, "proj");
 	glUniformMatrix4fv(uniProj, 1, GL_FALSE, glm::value_ptr(proj));
 	
+	glEnable(GL_DEPTH_TEST);
+	
 	SDL_Event windowEvent;
 	while (true) {
 		if (SDL_PollEvent(&windowEvent)) {
@@ -220,7 +222,7 @@ int main() {
 		
 		// Clear the screen to black
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
 		// Calculate transformation
 		glm::mat4 model;
