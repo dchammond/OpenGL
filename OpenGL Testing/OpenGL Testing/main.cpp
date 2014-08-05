@@ -10,7 +10,10 @@
 #include "GL/glew.h"
 #include <SDL2/SDL.h>
 #include "SOIL.h"
+#define GLM_FORCE_RADIANS
 #include "glm.hpp"
+#include "gtc/matrix_transform.hpp"
+#include "gtc/type_ptr.hpp"
 #include <iostream>
 #include <fstream>
 using namespace std;
@@ -168,6 +171,8 @@ int main() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	
+	GLint uniTrans = glGetUniformLocation(shaderProgram, "trans");
+	
 	SDL_Event windowEvent;
 	while (true) {
 		if (SDL_PollEvent(&windowEvent)) {
@@ -179,6 +184,15 @@ int main() {
 		// Clear the screen to black
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
+		
+		// Calculate transformation
+		glm::mat4 trans;
+		trans = glm::rotate(
+							trans,
+							(GLfloat)clock() / (GLfloat)CLOCKS_PER_SEC * 180.0f,
+							glm::vec3(0.0f, 0.0f, 1.0f)
+							);
+		glUniformMatrix4fv(uniTrans, 1, GL_FALSE, glm::value_ptr(trans));
 		
 		// Draw a rectangle from the 2 triangles using 6 indices
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
