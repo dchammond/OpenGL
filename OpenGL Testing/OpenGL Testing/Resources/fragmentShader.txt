@@ -10,5 +10,5 @@ uniform sampler2D texPuppy;
 
 void main()
 {
-	outColor = mix(texture(texKitten, Texcoord), texture(texPuppy, Texcoord), 0.5);
+	outColor = vec4(Color, 1.0) * mix(texture(texKitten, Texcoord), texture(texPuppy, Texcoord), 0.5);
 }
