@@ -18,11 +18,12 @@
 #include <fstream>
 using namespace std;
 
-GLuint LoadShaders(const char * vertex_file_path, const char * fragment_file_path) {
+GLuint LoadShaders(const char* vertex_file_path, const char* fragment_file_path, const char* geometry_file_path) {
  
 	// Create the shaders
 	GLuint VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
 	GLuint FragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
+	GLuint GeometryShaderID = glCreateShader(GL_GEOMETRY_SHADER);
 
 	// Read the Vertex Shader code from the file
 	string VertexShaderCode;
@@ -38,23 +39,35 @@ GLuint LoadShaders(const char * vertex_file_path, const char * fragment_file_pat
  
 	// Read the Fragment Shader code from the file
 	string FragmentShaderCode;
-	ifstream FragmentShaderStream(fragment_file_path, ios::in);
+	ifstream FragmentShaderStream;
+	FragmentShaderStream.open(fragment_file_path);
 	if(FragmentShaderStream.is_open()){
 		string Line = "";
 		while(getline(FragmentShaderStream, Line))
 			FragmentShaderCode += "\n" + Line;
 		FragmentShaderStream.close();
 	}
+	
+	// Read the Geometry Shader code from the file
+	string GeometryShaderCode;
+	ifstream GeometryShaderStream;
+	GeometryShaderStream.open(geometry_file_path);
+	if(GeometryShaderStream.is_open()){
+		string Line = "";
+		while(getline(GeometryShaderStream, Line))
+			GeometryShaderCode += "\n" + Line;
+		GeometryShaderStream.close();
+	}
+	
 	GLint Result;
 	// Compile Vertex Shader
 	char const * VertexSourcePointer = VertexShaderCode.c_str();
 	glShaderSource(VertexShaderID, 1, &VertexSourcePointer , NULL);
 	glCompileShader(VertexShaderID);
 	glGetShaderiv(VertexShaderID, GL_COMPILE_STATUS, &Result);
-//	if (Result == GL_TRUE) {
-//		cout << "NOOO" << endl;
-//		cout << VertexSourcePointer << endl;
-//	}
+	if (Result == GL_FALSE) {
+		cout << "NOOOV" << endl;
+	}
 
  
 	// Compile Fragment Shader
@@ -62,20 +75,29 @@ GLuint LoadShaders(const char * vertex_file_path, const char * fragment_file_pat
 	glShaderSource(FragmentShaderID, 1, &FragmentSourcePointer , NULL);
 	glCompileShader(FragmentShaderID);
 	glGetShaderiv(FragmentShaderID, GL_COMPILE_STATUS, &Result);
-//	if (Result == GL_TRUE) {
-//		cout << "NOOO" << endl;
-//		cout << FragmentSourcePointer << endl;
-//	}
+	if (Result == GL_FALSE) {
+		cout << "NOOOF" << endl;
+	}
+	
+	// Compile Geometry Shader
+	char const * GeometrySourcePointer = GeometryShaderCode.c_str();
+	glShaderSource(GeometryShaderID, 1, &GeometrySourcePointer , NULL);
+	glCompileShader(GeometryShaderID);
+	glGetShaderiv(GeometryShaderID, GL_COMPILE_STATUS, &Result);
+	if (Result == GL_FALSE) {
+		cout << "NOOOG" << endl;
+	}
 
- 
 	// Link the program
 	GLuint ProgramID = glCreateProgram();
 	glAttachShader(ProgramID, VertexShaderID);
 	glAttachShader(ProgramID, FragmentShaderID);
+	glAttachShader(ProgramID, GeometryShaderID);
 	glLinkProgram(ProgramID);
  
 	glDeleteShader(VertexShaderID);
 	glDeleteShader(FragmentShaderID);
+	glDeleteShader(GeometryShaderID);
  
 	return ProgramID;
 }
@@ -94,7 +116,7 @@ int main() {
 	glewExperimental = GL_TRUE;
 	glewInit();
 	
-	GLuint shaderProgram = LoadShaders("./Resources/vertexShader.txt", "./Resources/fragmentShader.txt");
+	GLuint shaderProgram = LoadShaders("./Resources/vertexShader.txt", "./Resources/fragmentShader.txt", "./Resources/geometryShader.txt");
 	glUseProgram(shaderProgram);
 	
 	// Create VBO with point coordinates
