@@ -171,7 +171,20 @@ int main() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	
-	GLint uniTrans = glGetUniformLocation(shaderProgram, "trans");
+	GLint uniModel = glGetUniformLocation(shaderProgram, "model");
+	
+	// Set up projection
+	glm::mat4 view = glm::lookAt(
+								 glm::vec3(1.2f, 1.2f, 1.2f),
+								 glm::vec3(0.0f, 0.0f, 0.0f),
+								 glm::vec3(0.0f, 0.0f, 1.0f)
+								 );
+	GLint uniView = glGetUniformLocation(shaderProgram, "view");
+	glUniformMatrix4fv(uniView, 1, GL_FALSE, glm::value_ptr(view));
+	
+	glm::mat4 proj = glm::perspective(45.0f, 800.0f / 600.0f, 1.0f, 10.0f);
+	GLint uniProj = glGetUniformLocation(shaderProgram, "proj");
+	glUniformMatrix4fv(uniProj, 1, GL_FALSE, glm::value_ptr(proj));
 	
 	SDL_Event windowEvent;
 	while (true) {
@@ -186,13 +199,13 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT);
 		
 		// Calculate transformation
-		glm::mat4 trans;
-		trans = glm::rotate(
-							trans,
+		glm::mat4 model;
+		model = glm::rotate(
+							model,
 							(GLfloat)clock() / (GLfloat)CLOCKS_PER_SEC * 180.0f,
 							glm::vec3(0.0f, 0.0f, 1.0f)
 							);
-		glUniformMatrix4fv(uniTrans, 1, GL_FALSE, glm::value_ptr(trans));
+		glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model));
 		
 		// Draw a rectangle from the 2 triangles using 6 indices
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
