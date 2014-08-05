@@ -86,11 +86,16 @@ int main() {
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 	SDL_Window *window = SDL_CreateWindow("OpenGL", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_OPENGL);
 	SDL_GLContext context = SDL_GL_CreateContext(window);
+	
 	// Initialize GLEW
 	glewExperimental = GL_TRUE;
 	glewInit();
+	
+	// Initialize Depth Testing
+	glEnable(GL_DEPTH_TEST);
 	
 	// Create Vertex Array Object
 	GLuint vao;
@@ -146,7 +151,7 @@ int main() {
 		
 		-1.0f, -1.0f, -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
 		1.0f, -1.0f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-		1.0f,  1.0f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+		1.0f,  1.0f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, // Floor
 		1.0f,  1.0f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f,
 		-1.0f,  1.0f, -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
 		-1.0f, -1.0f, -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f
@@ -206,7 +211,7 @@ int main() {
 	
 	// Set up projection
 	glm::mat4 view = glm::lookAt(
-								 glm::vec3(1.5f, 1.5f, 1.5f),
+								 glm::vec3(2.5f, 2.5f, 2.0f),
 								 glm::vec3(0.0f, 0.0f, 0.0f),
 								 glm::vec3(0.0f, 0.0f, 1.0f)
 								 );
@@ -217,7 +222,7 @@ int main() {
 	GLint uniProj = glGetUniformLocation(shaderProgram, "proj");
 	glUniformMatrix4fv(uniProj, 1, GL_FALSE, glm::value_ptr(proj));
 	
-	glEnable(GL_DEPTH_TEST);
+	GLint uniColor = glGetUniformLocation(shaderProgram, "overrideColor");
 	
 	SDL_Event windowEvent;
 	while (true) {
@@ -229,7 +234,7 @@ int main() {
 		
 		// Clear the screen to black
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		
 		// Calculate transformation
 		glm::mat4 model;
@@ -239,17 +244,34 @@ int main() {
 							glm::vec3(0.0f, 0.0f, 1.0f)
 							);
 		glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model));
- 
+		
 		// Draw cube
 		glDrawArrays(GL_TRIANGLES, 0, 36);
+		
+		glEnable(GL_STENCIL_TEST);
+		
+		// Draw floor
+		glStencilFunc(GL_ALWAYS, 1, 0xFF);
+		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+		glStencilMask(0xFF);
+		glDepthMask(GL_FALSE);
+		glClear(GL_STENCIL_BUFFER_BIT);
+		
 		glDrawArrays(GL_TRIANGLES, 36, 6);
 		
-		model = glm::scale(
-						   glm::translate(model, glm::vec3(0, 0, -1)),
-						   glm::vec3(1, 1, -1)
-						   );
+		// Draw cube reflection
+		glStencilFunc(GL_EQUAL, 1, 0xFF);
+		glStencilMask(0x00);
+		glDepthMask(GL_TRUE);
+		
+		model = glm::scale(glm::translate(model, glm::vec3(0, 0, -1)), glm::vec3(1, 1, -1));
 		glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model));
+		
+		glUniform3f(uniColor, 0.3f, 0.3f, 0.3f);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glUniform3f(uniColor, 1.0f, 1.0f, 1.0f);
+		
+		glDisable(GL_STENCIL_TEST);
 		
 		SDL_GL_SwapWindow(window);
 	}
