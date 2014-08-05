@@ -94,11 +94,32 @@ int main() {
 	glewExperimental = GL_TRUE;
 	glewInit();
 	
-	
 	GLuint shaderProgram = LoadShaders("./Resources/vertexShader.txt", "./Resources/fragmentShader.txt");
 	glUseProgram(shaderProgram);
 	
+	// Create VBO with point coordinates
+	GLuint vbo;
+	glGenBuffers(1, &vbo);
 	
+	GLfloat points[] = {
+		-0.45f,  0.45f,
+		0.45f,  0.45f,
+		0.45f, -0.45f,
+		-0.45f, -0.45f,
+	};
+	
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW);
+	
+	// Create VAO
+	GLuint vao;
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+	
+	// Specify layout of point data
+	GLint posAttrib = glGetAttribLocation(shaderProgram, "pos");
+	glEnableVertexAttribArray(posAttrib);
+	glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
 	
 	SDL_Event windowEvent;
 	while (true) {
@@ -108,12 +129,18 @@ int main() {
 			}
 		}
 		
+		// Render frame
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
 		
+		glDrawArrays(GL_POINTS, 0, 4);
 		
 		SDL_GL_SwapWindow(window);
 	}
 	
 	glDeleteProgram(shaderProgram);
+	
+	glDeleteBuffers(1, &vbo);
 	
 	SDL_GL_DeleteContext(context);
     return 0;
