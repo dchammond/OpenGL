@@ -127,7 +127,7 @@ int main() {
 		-0.45f,  0.45f,
 		0.45f,  0.45f,
 		0.45f, -0.45f,
-		-0.45f, -0.45f,
+		-0.45f, -0.45f
 	};
 	
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
