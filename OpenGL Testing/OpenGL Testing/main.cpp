@@ -18,7 +18,7 @@
 #include <fstream>
 using namespace std;
 
-GLuint LoadShaders(const char * vertex_file_path, const char * fragment_file_path) {
+GLuint LoadShaders(const char* vertex_file_path, const char* fragment_file_path) {
  
 	// Create the shaders
 	GLuint VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
@@ -80,14 +80,20 @@ GLuint LoadShaders(const char * vertex_file_path, const char * fragment_file_pat
 	return ProgramID;
 }
 
-int main() {
-	
+SDL_Window* createWindow(const char* title, int x, int y, int w, int h, Uint32 flags) {
 	SDL_Init(SDL_INIT_VIDEO);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-	SDL_Window *window = SDL_CreateWindow("OpenGL", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_OPENGL);
+	SDL_Window *window = SDL_CreateWindow(title, x, y, w, h, flags);
+	return window;
+}
+
+
+
+int main() {
+	SDL_Window* window = createWindow("OpenGL", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_OPENGL);
 	SDL_GLContext context = SDL_GL_CreateContext(window);
 	
 	// Initialize GLEW
@@ -179,6 +185,10 @@ int main() {
 	// Load textures
 	GLuint textures[2];
 	glGenTextures(2, textures);
+	
+	void loadTextures(const char* filename, int* width, int* height) {
+		
+	}
 	
 	int width, height;
 	unsigned char* image;
