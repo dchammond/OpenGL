@@ -250,9 +250,12 @@ int main() {
 		glm::mat4 model;
 		model = glm::rotate(
 							model,
-							(GLfloat)clock() / (GLfloat)CLOCKS_PER_SEC * 180.0f,
+							(GLfloat)SDL_GetTicks() / 1000.0f * glm::pi<GLfloat>(),
 							glm::vec3(0.0f, 0.0f, 1.0f)
 							);
+		
+		cout << (GLfloat)SDL_GetTicks() / 1000.0f * glm::pi<GLfloat>() << endl;
+		
 		glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model));
 		
 		// Draw cube
