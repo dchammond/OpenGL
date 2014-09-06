@@ -90,7 +90,23 @@ SDL_Window* createWindow(const char* title, int x, int y, int w, int h, Uint32 f
 	return window;
 }
 
-
+void LoadTextures(GLuint textures[], const char* filename, const GLchar* texName, GLuint shaderProgram, int texNum) {
+	int width, height;
+	unsigned char* image;
+	
+	glActiveTexture(GL_TEXTURE0 + texNum);
+	
+	glBindTexture(GL_TEXTURE_2D, textures[texNum]);
+	image = SOIL_load_image(filename, &width, &height, 0, SOIL_LOAD_RGB);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+	SOIL_free_image_data(image);
+	glUniform1i(glGetUniformLocation(shaderProgram, "texKitten"), texNum);
+	
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+}
 
 int main() {
 	SDL_Window* window = createWindow("OpenGL", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_OPENGL);
@@ -176,46 +192,18 @@ int main() {
 	
 	GLint colAttrib = glGetAttribLocation(shaderProgram, "color");
 	glEnableVertexAttribArray(colAttrib);
-	glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+	glVertexAttribPointer(colAttrib, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), reinterpret_cast<void*>(3 * sizeof(GLfloat)));
 	
 	GLint texAttrib = glGetAttribLocation(shaderProgram, "texcoord");
 	glEnableVertexAttribArray(texAttrib);
-	glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(6 * sizeof(GLfloat)));
+	glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), reinterpret_cast<void*>(6 * sizeof(GLfloat)));
 	
 	// Load textures
 	GLuint textures[2];
 	glGenTextures(2, textures);
 	
-	void loadTextures(const char* filename, int* width, int* height) {
-		
-	}
-	
-	int width, height;
-	unsigned char* image;
-	
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, textures[0]);
-	image = SOIL_load_image("./Resources/sample.png", &width, &height, 0, SOIL_LOAD_RGB);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-	SOIL_free_image_data(image);
-	glUniform1i(glGetUniformLocation(shaderProgram, "texKitten"), 0);
-	
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, textures[1]);
-	image = SOIL_load_image("./Resources/sample2.png", &width, &height, 0, SOIL_LOAD_RGB);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-	SOIL_free_image_data(image);
-	glUniform1i(glGetUniformLocation(shaderProgram, "texPuppy"), 1);
-	
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	LoadTextures(textures, "./Resources/sample.png", "texKitten", shaderProgram, 0);
+	LoadTextures(textures, "./Resources/sample2.png", "texPuppy", shaderProgram, 1);
 	
 	GLint uniModel = glGetUniformLocation(shaderProgram, "model");
 	
@@ -253,8 +241,6 @@ int main() {
 							(GLfloat)SDL_GetTicks() / 1000.0f * glm::pi<GLfloat>(),
 							glm::vec3(0.0f, 0.0f, 1.0f)
 							);
-		
-		cout << (GLfloat)SDL_GetTicks() / 1000.0f * glm::pi<GLfloat>() << endl;
 		
 		glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model));
 		
